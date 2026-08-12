@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-auth              # ← 對應 Vault role 綁的 bound_service_account_names
+  namespace: test01
+---
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultConnection
+metadata:
+  name: vault-connection
+  namespace: test01
+spec:
+  address: http://vault.infra.svc.cluster.local:8200   # Vault 位址(http,dev)
+---
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: vault-auth
+  namespace: test01
+spec:
+  vaultConnectionRef: vault-connection
+  method: kubernetes
+  mount: kubernetes             # 對應你 enable 的 auth 路徑 kubernetes/
+  kubernetes:
+    role: test01                # 對應 Vault 的 role test01
+    serviceAccount: vault-auth  # 用這個 SA 的 token 登入 Vault
+---
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultStaticSecret
+metadata:
+  name: test01
+  namespace: test01
+spec:
+  vaultAuthRef: vault-auth
+  mount: secret                 # KV mount 名稱
+  type: kv-v2
+  path: test01                  # VSO 會自動補成 secret/data/test01
+  destination:
+    name: test01-synced         # ← 最後產出的 K8s Secret 名字
+    create: true
+  refreshAfter: 30s

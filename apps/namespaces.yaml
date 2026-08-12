@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: namespaces
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/cooper-car/argocd-vault-lab 
+    path: manifests/namespaces        # 指 git 裡的資料夾(不是 Helm repo)
+    targetRevision: main              # branch 名
+  destination:
+    server: https://kubernetes.default.svc
+    # 不用填 namespace:Namespace 是 cluster 級資源,不歸屬任何 namespace
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

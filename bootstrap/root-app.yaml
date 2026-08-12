@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/cooper-car/argocd-vault-lab
+    path: apps                 # ← 指向「放子 App 的資料夾」
+    targetRevision: main
+    directory:
+      recurse: false           # apps/ 底下是扁平的一堆 Application,不需遞迴
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd          # 子 App 物件都建在 argocd namespace
+  syncPolicy:
+    automated:
+      prune: true              # 從 apps/ 刪掉某個檔 → 對應的子 App 也會被移除
+      selfHeal: true

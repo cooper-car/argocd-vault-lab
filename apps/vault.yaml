@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"      # 比 namespaces(0)晚一波
+spec:
+  project: default
+  source:
+    repoURL: https://helm.releases.hashicorp.com   # 上游 Helm repo
+    chart: vault
+    targetRevision: 0.34.0
+    helm:
+      values: |
+        server:
+          dev:
+            enabled: true
+            devRootToken: "root"     # dev 模式的 root token,直接用 "root"
+        injector:
+          enabled: false             # 我們用 VSO,不需要 agent injector
+        ui:
+          enabled: true              # 方便你等下 port-forward 看 Vault UI
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: infra                 # 裝進 infra(不加 CreateNamespace,交給 namespaces App)
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

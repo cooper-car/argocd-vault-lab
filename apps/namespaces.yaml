@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: namespaces
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"      # ← 補這段:最早的一波
 spec:
   project: default
   source:
